@@ -16,6 +16,13 @@ interface CartItem {
   quantity: number
 }
 
+interface FiltersType {
+  milletType: string
+  region: string
+  certification: string
+  priceRange: string
+}
+
 interface AppContextType {
   // User state
   user: User | null
@@ -31,18 +38,13 @@ interface AppContextType {
   // Search and filters
   searchQuery: string
   setSearchQuery: (query: string) => void
-  filters: {
-    milletType: string
-    region: string
-    certification: string
-    priceRange: string
-  }
-  setFilters: (filters: Partial<typeof filters>) => void
+  filters: FiltersType
+  setFilters: (filters: Partial<FiltersType>) => void
   
   // Orders
   orders: typeof mockOrders
   addOrder: (order: any) => void
-  updateOrderStatus: (orderId: string, status: string) => void
+  updateOrderStatus: (orderId: string, status: 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled') => void
   
   // Products
   products: typeof mockProducts
@@ -52,7 +54,7 @@ interface AppContextType {
   // Complaints
   complaints: typeof mockComplaints
   addComplaint: (complaint: any) => void
-  updateComplaintStatus: (complaintId: string, status: string) => void
+  updateComplaintStatus: (complaintId: string, status: 'Open' | 'In Progress' | 'Resolved') => void
   
   // Stats
   stats: typeof platformStats
@@ -65,12 +67,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
+  const [filters, setFiltersState] = useState<FiltersType>({
     milletType: 'all',
     region: 'all',
     certification: 'all',
     priceRange: 'all'
   })
+
+  const setFilters = (newFilters: Partial<FiltersType>) => {
+    setFiltersState(prev => ({ ...prev, ...newFilters }))
+  }
   const [orders, setOrders] = useState(mockOrders)
   const [products, setProducts] = useState(mockProducts)
   const [complaints, setComplaints] = useState(mockComplaints)
@@ -114,7 +120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setOrders(prev => [...prev, order])
   }
 
-  const updateOrderStatus = (orderId: string, status: string) => {
+  const updateOrderStatus = (orderId: string, status: 'Pending' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled') => {
     setOrders(prev =>
       prev.map(order =>
         order.id === orderId ? { ...order, status } : order
@@ -138,7 +144,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setComplaints(prev => [...prev, complaint])
   }
 
-  const updateComplaintStatus = (complaintId: string, status: string) => {
+  const updateComplaintStatus = (complaintId: string, status: 'Open' | 'In Progress' | 'Resolved') => {
     setComplaints(prev =>
       prev.map(complaint =>
         complaint.id === complaintId ? { ...complaint, status } : complaint
